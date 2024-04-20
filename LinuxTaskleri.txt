@@ -1,0 +1,38 @@
+
+telnet ile herhangi bir IP ve Porta eriþim nasýl saðlanýr
+
+Terminali açýn.
+telnet IP_adresi port_numarasý komutunu kullanarak baðlantý yapýn.
+
+telnet 192.168.1.100 22
+
+*******************************************************************
+
+traceroute ile bir website veya IP adresine paket gönderme ve ve giden paketin incelenmesi
+
+Terminali açýn.
+traceroute website_adresi veya IP_adresi komutunu kullanarak traceroute'u çalýþtýrýn.
+
+traceroute www.amazon.com
+traceroute 8.8.8.8
+----------------------------------------------------------------------------
+netcat kullanýmý
+
+port scanning
+nc -vz [host] [port]
+nc -vz 216.58.212.14 443
+-----------------------------------------------------------------------------
+IP deðiþtirmek
+
+nano /etc/sysconfig/network-scripts/ifcfg-eth0 config dosyasýna gidilir. (eth0 internet kartýmýzýn adý; bunu ifconfig komutuyla kontrol edip bulunabilir.)
+DEVICE=eth0
+BOOTPROTO=none
+ONBOOT=yes
+PREFIX=24
+IPADDR=192.168.2.203
+NETMASK=255.255.255.0
+GATEWAY=192.168.2.1
+kaydet ve çýk
+
+systemctl restart NetworkManager
+
