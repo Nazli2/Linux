@@ -1,0 +1,102 @@
+1- Keytool ile sertifika nasıl import edilir?
+
+Linux'ta keytool aracı, Java KeyStore (JKS) dosyalarını yönetmek için kullanılır. 
+
+Sertifikayı Hazırlama: İlk olarak, sertifikanızın bir dosyada bulunması gerekmektedir. Genellikle .cer veya .pem uzantılı bir dosyada bulunur.
+JKS Dosyasını Açma (Var ise): Eğer zaten bir JKS dosyanız varsa, bu adımı atlayabilirsiniz. Ancak yoksa, bir JKS dosyası oluşturmanız gerekecek. Örnek olarak:
+
+keytool -genkeypair -alias mykeystore -keyalg RSA -keystore mykeystore.jks (cacerts)
+
+Sertifikayı Aktarma: Şimdi, sertifikayı JKS dosyasına ekleyebilirsiniz:
+
+keytool -import -trustcacerts -alias mycertificate -file mycertificate.cer -keystore mykeystore.jks
+
+JKS Dosyasını Kontrol Etme: Sertifikanın doğru bir şekilde içe aktarıldığından emin olmak için JKS dosyasını kontrol edebilirsiniz:
+keytool -list -v -keystore mykeystore.jks
+
+cacerts
+
+JRE'deki anahtar deposu konumunu bulun.
+Genellikle bu anahtar deposu JAVA_HOME\jre\lib\security\cacerts konumundadır.
+Anahtar deposuna erişmek için kullanılan anahtar aracı genellikle JRE ile birlikte yüklenir ve kullanıma hazırdır.
+
+Sertifikayı JAVA_HOME\jre\lib\security adresinden içe aktarmak için standart tuş aracını çalıştırın.
+keytool -import -trustcacerts -alias mdecert -file C:\temp\mdeCert.cer -keystore cacerts
+
+
+
+
+***************************************************
+
+2- Openssl ile sertifika uzantıları nasıl dönüştürülür?
+
+Yeni bir RSA özel anahtarı oluştur: openssl genpkey -algorithm RSA -out private_key.pem
+Özel anahtar kullanarak bir Sertifika İmzalama İsteği (CSR) oluştur: openssl req -new -key private_key.pem -out csr.pem
+Kendi imzalı bir sertifika oluştur: openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365
+Bir sertifikayı doğrulayın: openssl x509 -in cert.pem -text -noout
+Özel anahtar ve genel anahtarın (sertifikada) eşleşip eşleşmediğini doğrulayın: openssl x509 -noout -modulus -in cert.pem | openssl sha256
+openssl rsa -noout -modulus -in key.pem | openssl sha256
+Bir sertifikayı PEM'den DER biçimine dönüştürün: openssl x509 -outform der -in cert.pem -out cert.der
+Bir dosyayı genel anahtarla şifreleyin: openssl rsautl -encrypt -pubin -inkey public_key.pem -in plaintext.txt -out encrypted.txt
+Bir dosyayı özel anahtarla şifresini çözün: openssl rsautl -decrypt -inkey private_key.pem -in encrypted.txt -out plaintext.txt
+Bir dosya için dijital imza oluşturun: openssl dgst -sha256 -sign private_key.pem -out signature.bin file.txt
+Dijital imzayı doğrulayın: openssl dgst -sha256 -verify public_key.pem -signature signature.bin file.txt
+Bir sunucuya SSL/TLS bağlantısını kontrol edin: openssl s_client -connect example.com:443
+PEM'i PKCS#12'ye dönüştürün: openssl pkcs12 -export -out certificate.pfx -inkey private_key.pem -in cert.pem -certfile chain.pem
+PKCS#12'den sertifikaları ve anahtarları çıkarın: openssl pkcs12 -in certificate.pfx -out key.pem -nodes
+Bir dizeyi SHA256 kullanarak özetleyin: echo -n "Merhaba, Dünya!" | openssl dgst -sha256
+Rastgele bir şifre oluşturun: openssl rand -base64 12
+
+**********************************************************
+
+3- iki sunucu arasında mesaj gönderimi ve alımı komutu
+ SSH (Secure Shell):
+ SSH, güvenli bir uzak erişim protokolüdür ve ssh komutu aracılığıyla bir sunucuya bağlanarak mesaj göndermek mümkündür. SSH ile birlikte gelen ssh komutu ile mesaj göndermek için:
+ ssh <sunucu_adresi> 'echo "Mesaj"'
+
+SCP (Secure Copy):
+SCP, SSH üzerinden dosya kopyalamak için kullanılan bir protokoldür. Mesaj göndermek için bir dosyayı kopyalayabilirsiniz. Örneğin:
+scp <dosya_adı> <sunucu_adresi>:<hedef_dizin>
+Bu, dosyayı hedef sunucuya kopyalar. Dosya içeriği bir mesaj içerebilir.
+
+how to use tcpdump 
+
+apt install tcpdump
+1. sudo tcpdump
+Bu, sistemin internete bağlandığı ağın mevcut arayüzünden paketleri yakalayacaktır. 
+
+2. Belirli bir ağ arayüzünden paketleri yakalamak için
+sudo tcpdump -i wlo1
+Bu komut artık paketleri wlo1 ağ arayüzünden yakalayacaktır. 
+
+3. Belirli sayıda paketi yakalamak için
+sudo tcpdump -c 4 -i wlo1
+Bu komut wlo1 arayüzünden yalnızca 4 paket yakalayacaktır. 
+
+4. Yakalanan paketleri ASCII formatında yazdırmak için
+sudo tcpdump -A -i wlo1
+Bu komut artık yakalanan paketleri wlo1'den ASCII değerine yazdıracaktır. 
+
+5. Mevcut tüm arayüzleri görüntülemek için
+sudo tcpdump -D
+Bu komut sistemde mevcut olan tüm arayüzleri gösterecektir. 
+
+6. Paketleri HEX ve ASCII değerlerinde görüntülemek için
+sudo tcpdump -XX -i wlo1
+Bu komut artık wlo1 arayüzünden yakalanan paketleri HEX ve ASCII değerlerinde yazdıracaktır. 
+
+7. Yakalanan paketleri bir dosyaya kaydetmek için
+sudo tcpdump -w created_packets.pcap -i wlo1
+Bu komut artık tüm yakalama paketlerinin çıktısını, yakalama_paketleri.pcap adlı bir dosyada verecektir. 
+
+8. Yakalanan paketleri bir dosyadan okumak için
+sudo tcpdump -r yakalanan_packets.pcap
+Bu komut artık yakalanan paketleri, catch_packets.pcap dosyasından okuyacaktır. 
+
+9. IP adresli paketleri yakalamak için
+sudo tcpdump -n -i wlo1
+Bu komut artık IP adresli paketleri yakalayacaktır. 
+
+10. Yalnızca TCP paketlerini yakalamak için
+sudo tcpdump -i wlo1 tcp
+Bu komut artık yalnızca wlo1'den gelen TCP paketlerini yakalayacaktır.
